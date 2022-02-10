@@ -26,5 +26,6 @@ if __name__ == '__main__':
         solver.take_input()
         if solver.solving:
             solver.solve(tick)
-            tick += 1
+            if solver.ticking:
+                tick += 1
         pygame.display.update()

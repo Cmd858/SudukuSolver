@@ -34,7 +34,7 @@ class Solver:
                              width=2 if i % 3 == 0 else 1)
         for i in range(9):
             for j in range(9):
-                if self.board[i][j] not in (0, -1):
+                if self.board[i][j] not in (0,):
                     self.screen.blit(self.font.render(str(self.board[i][j]), False, (0, 0, 0)),
                                      (self.scr_w / 2 - self.squaresize * 4.5 + self.squaresize * j,
                                       self.scr_h / 2 - self.squaresize * 4.5 + self.squaresize * i))
@@ -61,12 +61,12 @@ class Solver:
                 self.board = eval(input())  # defo really stupid
             if pressed_keys[pygame.K_s]:
                 self.solving = True
-                #print(self.board)
+                print(self.board)
                 #print(self.hints)
                 self.flush()
                 #print(self.board)
-                #print(self.hints)
-                #print()
+                print(self.hints)
+                print()
             if pressed_keys[pygame.K_t]:
                 self.ticking = not self.ticking
 
@@ -86,8 +86,30 @@ class Solver:
                                 self.hints[i][k].remove(num)
                             if num in self.hints[k][j] and i != k:
                                 self.hints[k][j].remove(num)
-                            #if num in self.hints[i // 3 * 3 + k // 3][j // 3 * 3 + k % 3]:
-                             #   self.hints[i // 3 * 3 + k // 3][j // 3 * 3 + k % 3].remove(num)
+                            if num in self.hints[i // 3 * 3 + k // 3][j // 3 * 3 + k % 3]:
+                                self.hints[i // 3 * 3 + k // 3][j // 3 * 3 + k % 3].remove(num)
+                    if self.board[i][j] == 0:
+                        numhinted = [self.hints[i // 3 * 3 + k // 3][j // 3 * 3 + k % 3] for k in range(9)]
+                        print(f'Numhinted: {numhinted}')
+                        mainloc = (i % 3, j % 3 * 3)  # get grid location ^ get containing square
+                        blocking = [True, True]  # determines whether hints are only in [column, row]
+                        for k in range(9):  # TODO: this does not work at all, maybe clearing candidates in own square?
+                            if num in numhinted[k]:
+                                if not k % 3 in mainloc:
+                                    print(f'setblock: {i}, {j}, {k}')
+                                    blocking[0] = False
+                                if not k // 3 in mainloc:
+                                    print(f'setblock2: {i}, {j}, {k}')
+                                    blocking[1] = False
+                        for k in range(9):
+                            if blocking[0]:
+                                print(f'blocking: {i} {j} {k}')
+                                if num in self.hints[k][j] and i // 3 != k // 3:
+                                    self.hints[k][j].remove(num)  # should remove column
+                            if blocking[1]:
+                                print(f'blocking2: {i} {j} {k}')
+                                if num in self.hints[i][k] and j // 3 != k // 3:
+                                    self.hints[i][k].remove(num)
 
         def fill(num):
             for i in range(9):
@@ -123,14 +145,17 @@ class Solver:
 
 
         if tick % 30 == 0:
+            print(self.hints)
             crossout(int(tick % 270 / 30+1))
+            print(self.hints)
             print(int(tick % 270 / 30+1))
         elif tick % 30 == 10:
             fill(int((tick - 10) % 270 / 30+1))
+            for i in range(9):
+                print(self.hints[i])
         elif tick % 30 == 20:
             if complete():
                 self.solving = False
 
 
-# TODO: gets stuck on second sudoku and idk why
-# TODO: After testing I have determined that it cannot tell when there is only one possibility in the row so fix this
+# TODO: fix deleting hints in same row and column bc it totally sucks rn
