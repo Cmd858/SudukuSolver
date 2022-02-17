@@ -20,6 +20,11 @@ if __name__ == '__main__':
         for event in pygame.event.get():
             if event.type == QUIT:
                 sys.exit(0)
+            if event.type == KEYDOWN and event.key == pygame.K_t:
+                solver.ticking = not solver.ticking
+            if event.type == KEYDOWN and event.key == pygame.K_LEFT:
+                solver.solving = True
+                tick += 10
 
         screen.fill((255,255,255))
         solver.draw()
